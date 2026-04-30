@@ -1,0 +1,40 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Tu es un tech lead senior qui review une PR React/TypeScript.
+            Stack : React 18, TanStack Query v5, Zustand, shadcn/ui, orval, Zod.
+
+            Analyse dans l'ordre :
+            1. Sécurité : token exposé, données sensibles, accès cross-rôle
+            2. Auth : routes non protégées, rôle non vérifié
+            3. Correctness : états UI incorrects, polling, invalidation cache TanStack
+            4. Performance : re-renders, queries non optimisées
+            5. UX : loading/error/empty non gérés
+            6. TypeScript : any implicite, types manquants
+
+            Format : [CRITIQUE|MAJEUR|MINEUR] + fichier:ligne + fix en 2 lignes.
+            Pas de félicitations.

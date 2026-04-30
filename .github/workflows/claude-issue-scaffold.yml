@@ -1,0 +1,42 @@
+name: Claude Issue Scaffold
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  scaffold:
+    if: github.event.label.name == 'ai-scaffold'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write issue context
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: printf '%s' "$BODY" > /tmp/issue_body.txt
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Issue #${{ github.event.issue.number }} : ${{ github.event.issue.title }}
+            Lis /tmp/issue_body.txt pour la description complète.
+
+            Ta mission :
+            1. Lis CLAUDE.md pour les conventions du projet
+            2. Analyse les composants/hooks existants similaires
+            3. Crée la branche feature/issue-${{ github.event.issue.number }}-{slug}
+            4. Génère des stubs avec TODOs commentés uniquement
+               Ordre : hook TanStack → composant → page
+            5. Ouvre une draft PR "Closes #${{ github.event.issue.number }}"
+            6. Retire le label de l'issue :
+               gh issue edit ${{ github.event.issue.number }} --remove-label "ai-scaffold"
+
+            Suis les patterns des fichiers existants.
