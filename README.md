@@ -17,7 +17,7 @@ Frontend for the [grading-cloud](https://github.com/BrunFlorimond/grading-cloud)
 | Forms | React Hook Form + Zod |
 | Router | React Router v6 |
 | Package manager | pnpm |
-| Hosting | Amazon S3 + CloudFront (CDK-provisioned in grading-cloud/infra) |
+| Hosting | Amazon S3 + CloudFront (CDK-provisioned in this repo under `infra/`) |
 
 ---
 
@@ -78,7 +78,7 @@ Every merge to `main` triggers a GitHub Actions workflow:
 2. `aws s3 sync dist/ s3://{bucket}` — sync to S3
 3. CloudFront invalidation — `/*`
 
-AWS credentials are injected via GitHub OIDC. The S3 bucket and CloudFront distribution are provisioned by `frontend_stack.py` in the [grading-cloud](https://github.com/BrunFlorimond/grading-cloud) infrastructure repo.
+AWS credentials are injected via GitHub OIDC. The S3 bucket and CloudFront distribution are provisioned by `infra/stacks/frontend_stack.py` in this repository.
 
 ---
 
