@@ -1,0 +1,11 @@
+.claude/
+.cursorrules
+Agent.md
+CLAUDE.md
+
+# Python cache artifacts
+__pycache__/
+*.py[cod]
+
+# CDK synth outputs
+infra/cdk.out/
