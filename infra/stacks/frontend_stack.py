@@ -1,4 +1,4 @@
-from aws_cdk import RemovalPolicy, Stack
+from aws_cdk import CfnOutput, RemovalPolicy, Stack
 from aws_cdk import aws_cloudfront as cloudfront
 from aws_cdk import aws_cloudfront_origins as origins
 from aws_cdk import aws_s3 as s3
@@ -27,7 +27,40 @@ class FrontendStack(Stack):
                 origin=origins.S3BucketOrigin.with_origin_access_control(
                     self.frontend_bucket
                 ),
+                allowed_methods=cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+                cache_policy=cloudfront.CachePolicy.CACHING_OPTIMIZED,
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             ),
             default_root_object="index.html",
+            error_responses=[
+                cloudfront.ErrorResponse(
+                    http_status=403,
+                    response_http_status=200,
+                    response_page_path="/index.html",
+                ),
+                cloudfront.ErrorResponse(
+                    http_status=404,
+                    response_http_status=200,
+                    response_page_path="/index.html",
+                ),
+            ],
+        )
+
+        CfnOutput(
+            self,
+            "FrontendBucketName",
+            value=self.frontend_bucket.bucket_name,
+            description="S3 bucket hosting frontend static assets.",
+        )
+        CfnOutput(
+            self,
+            "FrontendDistributionId",
+            value=self.distribution.distribution_id,
+            description="CloudFront distribution id for cache invalidation.",
+        )
+        CfnOutput(
+            self,
+            "FrontendDistributionDomainName",
+            value=self.distribution.distribution_domain_name,
+            description="CloudFront distribution domain name.",
         )
